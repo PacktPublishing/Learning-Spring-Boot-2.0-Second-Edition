@@ -1,0 +1,51 @@
+// tag::buildscript[]
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M5'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+// end::buildscript[]
+
+// tag::plugins[]
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+// end::plugins[]
+
+// tag::jar[]
+jar {
+	baseName = 'learning-spring-boot'
+	version = '0.0.1-SNAPSHOT'
+}
+// end::jar[]
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+// tag::deps[]
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
+	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+	compile('org.springframework.boot:spring-boot-starter-webflux')
+
+	compile('org.projectlombok:lombok')
+	compile('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+// end::deps[]

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Learning Spring Boot: Spring-a-Gram</title>
+        <link rel="stylesheet" href="/main.css" />
+    </head>
+    <body>
+
+        <h1>Learning Spring Boot - 2nd Edition</h1>
+
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Id</th><th>Name</th><th>Image</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="image : ${images}">
+                    <td th:text="${image.id}" />
+                    <td th:text="${image.name}" />
+                    <td><a th:href="@{'/images/' + ${image.name} + '/raw'}"><img th:src="@{'/images/' + ${image.name} + '/raw'}" class="thumbnail" /></a></td>
+                    <td>
+                        <form th:method="delete" th:action="@{'/images/' + ${image.name}}">
+                            <input type="submit" value="Delete" />
+                        </form>
+                    </td>
+                    <!-- tag::comments[] -->
+                    <td>
+                        <ul th:id="'comments-' + ${image.id}">
+                            <li th:each="comment : ${image.comments}" th:text="${comment.comment}"></li>
+                        </ul>
+                    </td>
+                    <td>
+                        <input th:id="'comment-' + ${image.id}" type="text" value="" />
+                        <button th:id="${image.id}" class="comment">Submit</button>
+                    </td>
+                    <!-- end::comments[] -->
+                </tr>
+                </tbody>
+            </table>
+
+            <form method="post" enctype="multipart/form-data" action="/images">
+                <p><input type="file" name="file" /></p>
+                <p><input type="submit" value="Upload" /></p>
+            </form>
+
+            <!-- tag::chat-1[] -->
+            <div id="chatBox">
+                Greetings!
+                <br/>
+                <textarea id="chatDisplay" rows="10" cols="80"
+                          disabled="true"></textarea>
+                <br/>
+                <input id="chatInput" type="text" style="width: 500px"
+                       value="" />
+                <br/>
+                <button id="chatButton">Send</button>
+                <br/>
+            </div>
+            <!-- end::chat-1[] -->
+        </div>
+
+        <!-- tag::javascript[] -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            (function() {
+                    // Send in new comments via an AJAX call
+                    document.querySelectorAll('button.comment').forEach(function(button) {
+                        button.addEventListener('click', function() {
+                            var comment = document.getElementById('comment-' + button.id);
+
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', /*[[@{'/comments'}]]*/'', true);
+
+                            var formData = new FormData();
+                            formData.append('comment', comment.value);
+                            formData.append('imageId', button.id);
+
+                            xhr.send(formData);
+
+                            comment.value = '';
+                        });
+                    });
+
+    				// Listen for new comments
+                    var newComments = new WebSocket('ws://localhost:8200/topic/comments.new');
+                    newComments.onmessage = function(event) {
+                        console.log('Received ' + event.data + '!');
+                        var parsedMessage = JSON.parse(event.data);
+                        var ul = document.getElementById(
+                            'comments-' + parsedMessage.imageId);
+                        var li = document.createElement('li');
+                        li.appendChild(
+                            document.createTextNode(parsedMessage.comment));
+                        ul.appendChild(li);
+                    }
+
+                    <!-- tag::chat-2[] -->
+                    var outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new');
+                    // Post new chat messages
+                    outboundChatMessages.onopen = function(event) {
+                        document.getElementById('chatButton')
+                            .addEventListener('click', function () {
+                                var chatInput = document.getElementById('chatInput');
+                                console.log('Publishing "' + chatInput.value + '"');
+                                outboundChatMessages.send(chatInput.value);
+                                chatInput.value = '';
+                                chatInput.focus();
+                            });
+                    }
+                    <!-- end::chat-2[] -->
+
+				<!-- tag::chat-3[] -->
+				var inboundChatMessages =
+					new WebSocket('ws://localhost:8200/topic/chatMessage.new');
+				// Listen for new chat messages
+				inboundChatMessages.onmessage = function (event) {
+					console.log('Received ' + event.data);
+					var chatDisplay = document.getElementById('chatDisplay');
+					chatDisplay.value = chatDisplay.value + event.data + '\n';
+				};
+				<!-- end::chat-3[] -->
+
+                    document.getElementById('chatInput').focus();
+            })();
+            /*]]>*/
+        </script>
+        <!-- end::javascript[] -->
+
+
+    </body>
+</html>

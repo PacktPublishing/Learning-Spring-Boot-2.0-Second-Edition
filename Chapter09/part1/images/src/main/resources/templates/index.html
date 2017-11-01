@@ -1,0 +1,45 @@
+<!-- tag::images[] -->
+<!DOCTYPE html>
+<div xmlns:th="http://www.thymeleaf.org">
+
+    <table>
+        <!-- end::images[] -->
+
+        <thead>
+        <tr>
+            <th>Id</th><th>Name</th><th>Image</th><th></th><th>Owner</th><th>Comments</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="image : ${images}">
+            <td th:text="${image.id}" />
+            <td th:text="${image.name}" />
+            <td><a th:href="@{'/images/' + ${image.name} + '/raw'}"><img th:src="@{'/images/' + ${image.name} + '/raw'}" class="thumbnail" /></a></td>
+            <!-- tag::delete[] -->
+            <td>
+                <button th:if="${#authorization.expr('hasRole(''ROLE_ADMIN'')') or #authorization.expr('''__${image.owner}__'' == authentication.name')}"
+                        th:id="'/images/' + ${image.name}" class="delete">Delete</button>
+            </td>
+            <!-- end::delete[] -->
+            <!-- tag::owner[] -->
+            <td th:text="${image.owner}" />
+            <!-- end::owner[] -->
+            <!-- tag::comments[] -->
+            <td>
+                <ul th:id="'comments-' + ${image.id}">
+                    <li th:each="comment : ${image.comments}" th:text="${comment.comment}"></li>
+                </ul>
+            </td>
+            <td>
+                <input th:id="'comment-' + ${image.id}" type="text" value="" />
+                <button th:id="${image.id}" class="comment">Submit</button>
+            </td>
+            <!-- end::comments[] -->
+        </tr>
+        </tbody>
+    </table>
+
+    <p><input type="file" name="file" id="file" /></p>
+    <p><button id="upload">Upload</button></p>
+
+</div>

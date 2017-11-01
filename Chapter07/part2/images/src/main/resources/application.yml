@@ -1,0 +1,20 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  http:
+    multipart:
+      max-file-size: 10MB
+  cloud:
+    stream:
+      bindings:
+        input:
+          destination: learning-spring-boot
+        output:
+          destination: learning-spring-boot
+          group: comments
+          content-type: application/json
+  application:
+    name: images

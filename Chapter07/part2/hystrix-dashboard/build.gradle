@@ -1,0 +1,53 @@
+// tag::versions[]
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M5'
+		springCloudVersion = 'Finchley.M3'
+	}
+	// end::versions[]
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+plugins {
+	// tag::gradle-git[]
+	id "com.gorylenko.gradle-git-properties" version "1.4.17"
+	// end::gradle-git[]
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+jar {
+	baseName = 'learning-spring-boot-hystrix-dashboard'
+	version = '0.0.1-SNAPSHOT'
+}
+
+// tag::deps[]
+dependencies {
+	compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix-dashboard')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+// end::deps[]

@@ -1,0 +1,9 @@
+# tag::secured-config-server[]
+spring:
+  application:
+    name: eureka
+  cloud:
+    config:
+      label: session
+      password: password
+# end::secured-config-server[]

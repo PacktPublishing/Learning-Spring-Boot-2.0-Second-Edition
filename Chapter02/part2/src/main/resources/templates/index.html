@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Learning Spring Boot: Spring-a-Gram</title>
+    <link rel="stylesheet" href="/main.css" />
+</head>
+<body>
+
+<h1>Learning Spring Boot - 2nd Edition</h1>
+
+<div>
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th><th>Name</th><th>Image</th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="image : ${images}">
+            <td th:text="${image.id}" />
+            <td th:text="${image.name}" />
+            <td>
+                <a th:href="@{'/images/' + ${image.name} + '/raw'}">
+                    <img th:src="@{'/images/'+${image.name}+'/raw'}"
+                         class="thumbnail" />
+                </a>
+            </td>
+            <td>
+                <form th:method="delete"
+                      th:action="@{'/images/' + ${image.name}}">
+                    <input type="submit" value="Delete" />
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <form method="post" enctype="multipart/form-data"
+                                        action="/images">
+        <p><input type="file" name="file" /></p>
+        <p><input type="submit" value="Upload" /></p>
+    </form>
+</div>
+
+</body>
+</html>

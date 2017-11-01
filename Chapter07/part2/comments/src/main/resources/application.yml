@@ -1,0 +1,16 @@
+server:
+  port: 9000
+
+spring:
+  cloud:
+    stream:
+      bindings:
+        input:
+          destination: learning-spring-boot
+          group: comments
+          content-type: application/json
+        output:
+          destination: learning-spring-boot
+  application:
+    name: comments
+

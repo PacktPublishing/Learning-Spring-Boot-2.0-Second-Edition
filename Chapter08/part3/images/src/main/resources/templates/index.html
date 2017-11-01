@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Learning Spring Boot: Spring-a-Gram</title>
+        <link rel="stylesheet" href="/main.css" />
+    </head>
+    <body>
+
+        <h1>Learning Spring Boot - 2nd Edition</h1>
+
+        <!-- tag::username[] -->
+        <input id="username" type="text" />
+        <button id="connect">Connect</button>
+        <button id="disconnect" style="display: none">Disconnect</button>
+        <!-- end::username[] -->
+
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Id</th><th>Name</th><th>Image</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="image : ${images}">
+                    <td th:text="${image.id}" />
+                    <td th:text="${image.name}" />
+                    <td><a th:href="@{'/images/' + ${image.name} + '/raw'}"><img th:src="@{'/images/' + ${image.name} + '/raw'}" class="thumbnail" /></a></td>
+                    <td>
+                        <form th:method="delete" th:action="@{'/images/' + ${image.name}}">
+                            <input type="submit" value="Delete" />
+                        </form>
+                    </td>
+                    <!-- tag::comments[] -->
+                    <td>
+                        <ul th:id="'comments-' + ${image.id}">
+                            <li th:each="comment : ${image.comments}" th:text="${comment.comment}"></li>
+                        </ul>
+                    </td>
+                    <td>
+                        <input th:id="'comment-' + ${image.id}" type="text" value="" />
+                        <button th:id="${image.id}" class="comment">Submit</button>
+                    </td>
+                    <!-- end::comments[] -->
+                </tr>
+                </tbody>
+            </table>
+
+            <form method="post" enctype="multipart/form-data" action="/images">
+                <p><input type="file" name="file" /></p>
+                <p><input type="submit" value="Upload" /></p>
+            </form>
+
+            <div id="chatBox" style="display: none">
+                Greetings!
+                <br/>
+                <textarea id="chatDisplay" rows="10" cols="80" disabled="true"></textarea>
+                <br/>
+                <input id="chatInput" type="text" style="width: 500px" value="" />
+                <br/>
+                <button id="chatButton">Send</button>
+                <br/>
+            </div>
+        </div>
+
+        <!-- tag::javascript[] -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            (function() {
+                // Register a handler for each button to make an AJAX call
+                document.querySelectorAll('button.comment').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var comment = document.getElementById('comment-' + button.id);
+
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', /*[[@{'/comments'}]]*/'', true);
+
+                        var formData = new FormData();
+                        formData.append('comment', comment.value);
+                        formData.append('imageId', button.id);
+
+                        xhr.send(formData);
+
+                        comment.value = '';
+                    });
+                });
+
+                var newComments = null;
+                var outboundChatMessages = null;
+                var inboundChatMessages = null;
+
+                // tag::connect[]
+                document.getElementById('connect')
+                    .addEventListener('click', function () {
+                        document.getElementById('connect').style.display = 'none';
+                        document.getElementById('disconnect').style.display =
+                                                                        'inline';
+
+                        var usernameInput = document.getElementById('username');
+
+                        document.getElementById('chatBox').style.display = 'inline';
+                        // end::connect[]
+
+                        // Listen for new comments
+                        newComments = new WebSocket('ws://localhost:8200/topic/comments.new?user='
+                            + usernameInput.value);
+                        newComments.onmessage = function(event) {
+                            console.log('Received ' + event.data + '!');
+                            var parsedMessage = JSON.parse(event.data);
+                            var ul = document.getElementById(
+                                'comments-' + parsedMessage.imageId);
+                            var li = document.createElement('li');
+                            li.appendChild(
+                                document.createTextNode(parsedMessage.comment));
+                            ul.appendChild(li);
+                        }
+
+                        outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new?user='
+                            + usernameInput.value);
+                        // Post new chat messages
+                        outboundChatMessages.onopen = function(event) {
+                            document.getElementById('chatButton')
+                                .addEventListener('click', function () {
+                                    var chatInput = document.getElementById('chatInput');
+                                    console.log('Publishing "' + chatInput.value + '"');
+                                    outboundChatMessages.send(chatInput.value);
+                                    chatInput.value = '';
+                                    chatInput.focus();
+                                });
+                        }
+
+                        // tag::chat[]
+                        inboundChatMessages =
+                            new WebSocket(
+                            	'ws://localhost:8200/topic/chatMessage.new?user='
+                                + usernameInput.value);
+                        inboundChatMessages.onmessage = function (event) {
+                        	console.log('Received ' + event.data);
+                            var chatDisplay = document.getElementById('chatDisplay');
+                            chatDisplay.value = chatDisplay.value + event.data + '\n';
+                        };
+                        // end::chat[]
+
+                        usernameInput.value = '';
+                        document.getElementById('chatInput').focus();
+                });
+
+                // tag::disconnect[]
+                document.getElementById('disconnect')
+                    .addEventListener('click', function () {
+                        document.getElementById('connect').style.display = 'inline';
+                        document.getElementById('disconnect').style.display = 'none';
+                        document.getElementById('chatBox').style.display = 'none';
+
+                        if (newComments != null) {
+                            newComments.close();
+                        }
+                        if (outboundChatMessages != null) {
+                            outboundChatMessages.close();
+                        }
+                        if (inboundChatMessages != null) {
+                            inboundChatMessages.close();
+                        }
+                    });
+                // end::disconnect[]
+            })();
+            /*]]>*/
+        </script>
+        <!-- end::javascript[] -->
+
+
+    </body>
+</html>

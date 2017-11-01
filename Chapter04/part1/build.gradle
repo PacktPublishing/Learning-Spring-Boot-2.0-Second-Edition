@@ -1,0 +1,53 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M5'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+jar {
+	baseName = 'learning-spring-boot'
+	version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-webflux')
+	compile('org.synchronoss.cloud:nio-multipart-parser')
+	compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
+	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+	compile('org.projectlombok:lombok')
+
+	// tag::test-1[]
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	// end::test-1[]
+	// tag::test-2[]
+	testCompile("io.projectreactor:reactor-test")
+	// end::test-2[]
+	// tag::test-3[]
+	testCompile("de.flapdoodle.embed:de.flapdoodle.embed.mongo")
+	// end::test-3[]
+	// tag::test-4[]
+	testCompile("org.seleniumhq.selenium:selenium-java")
+	// end::test-4[]
+}

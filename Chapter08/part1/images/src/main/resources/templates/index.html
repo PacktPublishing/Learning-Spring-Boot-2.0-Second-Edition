@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Learning Spring Boot: Spring-a-Gram</title>
+        <link rel="stylesheet" href="/main.css" />
+    </head>
+    <body>
+
+        <h1>Learning Spring Boot - 2nd Edition</h1>
+
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Id</th><th>Name</th><th>Image</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="image : ${images}">
+                    <td th:text="${image.id}" />
+                    <td th:text="${image.name}" />
+                    <td><a th:href="@{'/images/' + ${image.name} + '/raw'}">
+                        <img th:src="@{'/images/' + ${image.name} + '/raw'}"
+                             class="thumbnail" />
+                        </a>
+                    </td>
+                    <td>
+                        <form th:method="delete" th:action="@{'/images/' + ${image.name}}">
+                            <input type="submit" th:value="Delete" />
+                        </form>
+                    </td>
+                    <td>
+                        <ul th:id="'comments-' + ${image.id}">
+                            <li th:each="comment : ${image.comments}" th:text="${comment.comment}"></li>
+                        </ul>
+                    </td>
+                    <!-- tag::comments[] -->
+                    <td>
+                        <input th:id="'comment-' + ${image.id}" type="text" value="" />
+                        <button th:id="${image.id}" class="comment">Submit</button>
+                    </td>
+                    <!-- end::comments[] -->
+                </tr>
+                </tbody>
+            </table>
+
+            <form method="post" enctype="multipart/form-data" action="/images">
+                <p><input type="file" name="file" /></p>
+                <p><input type="submit" value="Upload" /></p>
+            </form>
+
+        </div>
+
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            (function() {
+                // tag::button[]
+                // Register a handler for each button to make an AJAX call
+                document.querySelectorAll('button.comment')
+                        .forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        var comment = document.getElementById(
+                                'comment-' + button.id);
+
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', /*[[@{'/comments'}]]*/'', true);
+
+                        var formData = new FormData();
+                        formData.append('comment', comment.value);
+                        formData.append('imageId', button.id);
+    
+                        xhr.send(formData);
+
+                        comment.value = '';
+                    });
+                });
+                // end::button[]
+
+                // tag::stomp[]
+                var socket = new WebSocket('ws://localhost:8200/topic/comments.new');
+                socket.onopen = function(event) {
+                    console.log('Connected to chat service!');
+                    console.log(event);
+                }
+                socket.onmessage = function(event) {
+                    console.log('Received ' + event.data + '!');
+                    var parsedMessage = JSON.parse(event.data);
+                    var ul = document.getElementById(
+                    	'comments-' + parsedMessage.imageId);
+                    var li = document.createElement('li');
+                    li.appendChild(
+                    	document.createTextNode(parsedMessage.comment));
+                    ul.appendChild(li);
+                }
+                // end::stomp[]
+            })();
+            /*]]>*/
+        </script>
+
+    </body>
+</html>

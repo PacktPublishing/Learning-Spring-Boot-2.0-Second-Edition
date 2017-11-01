@@ -1,0 +1,20 @@
+# tag::settings[]
+spring:
+  cloud:
+    stream:
+      bindings:
+        input:
+          destination: learning-spring-boot-comments
+          group: learning-spring-boot
+        output:
+          destination: learning-spring-boot-comments
+          group: learning-spring-boot
+# end::settings[]
+# tag::logs[]
+logging:
+  level:
+    org:
+      springframework:
+        cloud: DEBUG
+        integration: DEBUG
+# end::logs[]

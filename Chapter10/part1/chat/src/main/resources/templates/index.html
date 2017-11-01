@@ -1,0 +1,180 @@
+<!-- tag::template[] -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Learning Spring Boot: Spring-a-Gram</title>
+        <link rel="stylesheet" href="/main.css" />
+    </head>
+    <body>
+        <div>
+            <span th:text="${authentication.name}" />
+            <span th:text="${authentication.authorities}" />
+        </div>
+        <hr />
+
+        <h1>Learning Spring Boot - 2nd Edition</h1>
+
+        <div id="images"></div>
+
+        <div id="chatBox">
+            Greetings!
+            <br/>
+            <textarea id="chatDisplay"
+                      rows="10" cols="80"
+                      disabled="true" />
+            <br/>
+            <input id="chatInput" type="text"
+                   style="width: 500px" value="" />
+            <br/>
+            <button id="chatButton">Send</button>
+            <br/>
+        </div>
+    <!-- end::template[] -->
+
+        <!-- tag::images-javascript[] -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+			(function() {
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', /*[[@{'/imagesService'}]]*/'', true);
+				xhr.onload = function(e) {
+					if (xhr.readyState === 4) {
+						if (xhr.status === 200) {
+							document.getElementById('images').innerHTML =
+								xhr.responseText;
+
+							// Register a handler for each button
+							document.querySelectorAll('button.comment')
+								.forEach(function(button) {
+									button.addEventListener('click',
+										function() {
+											e.preventDefault();
+											var comment =
+												document.getElementById(
+													'comment-' + button.id);
+
+											var xhr = new XMLHttpRequest();
+											xhr.open('POST',
+                                                    /*[[@{'/comments'}]]*/'',
+												true);
+
+											var formData = new FormData();
+											formData.append('comment',
+												comment.value);
+											formData.append('imageId',
+												button.id);
+
+											xhr.send(formData);
+
+											comment.value = '';
+										});
+								});
+
+							document.querySelectorAll('button.delete')
+								.forEach(function(button) {
+									button.addEventListener('click',
+										function() {
+											e.preventDefault();
+											var xhr = new XMLHttpRequest();
+											xhr.open('DELETE', button.id, true);
+											xhr.withCredentials = true;
+											xhr.send(null);
+										});
+								});
+
+							document.getElementById('upload')
+								.addEventListener('click', function() {
+									e.preventDefault();
+									var xhr = new XMLHttpRequest();
+									xhr.open('POST',
+                                            /*[[@{'/images'}]]*/'',
+										true);
+
+									var files = document
+										.getElementById('file').files;
+
+									var formData  = new FormData();
+									formData.append('file', files[0],
+										files[0].name);
+
+									xhr.send(formData);
+								})
+						}
+					}
+				}
+				xhr.send(null);
+			})();
+            /*]]>*/
+        </script>
+        <!-- end::images-javascript[] -->
+
+        <!-- tag::websocket-javascript[] -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+			(function() {
+				// Send in new comments via an AJAX call
+				document.querySelectorAll('button.comment').forEach(function (button) {
+					button.addEventListener('click', function () {
+						var comment = document.getElementById('comment-' + button.id);
+
+						var xhr = new XMLHttpRequest();
+						xhr.open('POST', /*[[@{'/comments'}]]*/'', true);
+
+						var formData = new FormData();
+						formData.append('comment', comment.value);
+						formData.append('imageId', button.id);
+
+						xhr.send(formData);
+
+						comment.value = '';
+					});
+				});
+
+				// Listen for new comments
+				var newComments = new WebSocket('wss://' + window.location.host + ':4443/topic/comments.new');
+				newComments.onmessage = function(event) {
+					console.log('Received ' + event.data + '!');
+					var parsedMessage = JSON.parse(event.data);
+					var ul = document.getElementById(
+						'comments-' + parsedMessage.imageId);
+					var li = document.createElement('li');
+					li.appendChild(
+						document.createTextNode(parsedMessage.comment));
+					ul.appendChild(li);
+				}
+
+				<!-- tag::chat-2[] -->
+				var outboundChatMessages = new WebSocket('wss://' + window.location.host + ':4443/app/chatMessage.new');
+				// Post new chat messages
+				outboundChatMessages.onopen = function(event) {
+					document.getElementById('chatButton')
+						.addEventListener('click', function () {
+							var chatInput = document.getElementById('chatInput');
+							console.log('Publishing "' + chatInput.value + '"');
+							outboundChatMessages.send(chatInput.value);
+							chatInput.value = '';
+							chatInput.focus();
+						});
+				}
+				<!-- end::chat-2[] -->
+
+				<!-- tag::chat-3[] -->
+				var inboundChatMessages =
+					new WebSocket('wss://' + window.location.host + ':4443/topic/chatMessage.new');
+				// Listen for new chat messages
+				inboundChatMessages.onmessage = function (event) {
+					console.log('Received ' + event.data);
+					var chatDisplay = document.getElementById('chatDisplay');
+					chatDisplay.value = chatDisplay.value + event.data + '\n';
+				};
+				<!-- end::chat-3[] -->
+
+				document.getElementById('chatInput').focus();
+			})();
+            /*]]>*/
+        </script>
+        <!-- end::websocket-javascript[] -->
+    
+    </body>
+</html>

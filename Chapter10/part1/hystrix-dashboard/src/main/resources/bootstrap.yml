@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: hystrix-dashboard
+  cloud:
+    config:
+      label: session
+      password: password

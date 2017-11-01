@@ -1,0 +1,100 @@
+// tag::propdeps-plugin-1[]
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M5'
+		springCloudVersion = 'Finchley.M3'
+		springCloudStreamVersion = 'Elmhurst.M2'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+		maven { url "http://repo.spring.io/plugins-release" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
+	}
+}
+// end::propdeps-plugin-1[]
+
+plugins {
+	// tag::gradle-git[]
+	id "com.gorylenko.gradle-git-properties" version "1.4.17"
+	// end::gradle-git[]
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+// tag::propdeps-plugin-2[]
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-maven'
+apply plugin: 'propdeps-idea'
+apply plugin: 'propdeps-eclipse'
+// end::propdeps-plugin-2[]
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "https://repo.spring.io/release" }
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	maven { url "https://dl.bintray.com/rabbitmq/maven-milestones/" }
+}
+
+jar {
+	baseName = 'learning-spring-boot-chat'
+	version = '0.0.1-SNAPSHOT'
+}
+
+configurations {
+	all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+	all*.exclude group: 'org.springframework', module: 'spring-webmvc'
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-webflux')
+	compile('org.synchronoss.cloud:nio-multipart-parser')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+	compile('org.springframework.boot:spring-boot-devtools')
+	compile('org.projectlombok:lombok')
+	compile('org.springframework.cloud:spring-cloud-starter-stream-rabbit')
+	compile('org.springframework.cloud:spring-cloud-stream-reactive')
+	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+	compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')
+	compile('org.springframework.cloud:spring-cloud-starter-config')
+
+	compile('org.springframework.boot:spring-boot-starter-security-reactive')
+
+	compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
+
+	compile('org.springframework.session:spring-session-data-mongodb')
+
+	// tag::zuul[]
+	compile('org.springframework.cloud:spring-cloud-starter-gateway')
+	// end::zuul[]
+
+	// tag::configuration-processor[]
+	optional "org.springframework.boot:spring-boot-configuration-processor"
+	// end::configuration-processor[]
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+// tag::configuration-processor-2[]
+compileJava.dependsOn(processResources)
+// end::configuration-processor-2[]
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-stream-dependencies:${springCloudStreamVersion}"
+	}
+}

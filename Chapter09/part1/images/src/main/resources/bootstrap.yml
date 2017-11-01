@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: images
+  cloud:
+    config:
+      label: session
+      password: password

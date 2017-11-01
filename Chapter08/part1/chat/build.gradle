@@ -1,0 +1,67 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.0.M5'
+		springCloudVersion = 'Finchley.M3'
+		springCloudStreamVersion = 'Elmhurst.M2'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+plugins {
+	// tag::gradle-git[]
+	id "com.gorylenko.gradle-git-properties" version "1.4.17"
+	// end::gradle-git[]
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	maven { url "https://dl.bintray.com/rabbitmq/maven-milestones/" }
+}
+
+jar {
+	baseName = 'learning-spring-boot-chat'
+	version = '0.0.1-SNAPSHOT'
+}
+
+configurations {
+	all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+	all*.exclude group: 'org.springframework', module: 'spring-webmvc'
+}
+
+dependencies {
+	// tag::websocket[]
+	compile('org.springframework.boot:spring-boot-starter-webflux')
+	compile('org.projectlombok:lombok')
+	compile('org.springframework.cloud:spring-cloud-starter-stream-rabbit')
+	compile('org.springframework.cloud:spring-cloud-stream-reactive')
+	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+	compile('org.springframework.cloud:spring-cloud-starter-config')
+	// end::websocket[]
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-stream-dependencies:${springCloudStreamVersion}"
+	}
+}
