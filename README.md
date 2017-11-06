@@ -14,13 +14,13 @@ public interface MyRepository {
 }
 ```
 
-(*) Spring Boot 2.0 requires Java Developer Kit (JDK) 8 or higher
+[*] Spring Boot 2.0 requires Java Developer Kit (JDK) 8 or higher
 
-(*) A modern IDE (IntelliJ IDEA or Spring Tool Suite) is recommended
+[*] A modern IDE (IntelliJ IDEA or Spring Tool Suite) is recommended
 
-(*) RabbitMQ 3.6 or higher must be installed (check out https:/​/​www.​rabbitmq.​com/download.​html, or, when using Mac Homebrew, brew install RabbitMQ)
+[*] RabbitMQ 3.6 or higher must be installed (check out https://www.rabbitmq.com/download.html, or, when using Mac Homebrew, brew install RabbitMQ)
 
-(*) MongoDB 3.0 or higher must be installed (check out https:/​/​www.​mongodb.​com/download-​center, or, when using Mac Homebrew, brew install MongoDB)
+[*] MongoDB 3.0 or higher must be installed (check out https://www.mongodb.com/download-center, or, when using Mac Homebrew, brew install MongoDB)
 
 ## Related Products
 * [Spring 5.0 Cookbook](https://www.packtpub.com/application-development/spring-50-cookbook?utm_source=github&utm_medium=repository&utm_campaign=9781787128316)
